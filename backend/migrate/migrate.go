@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/aminasadiam/CinoFilm/backend/database"
+	"github.com/aminasadiam/CinoFilm/backend/models"
 	"github.com/joho/godotenv"
 )
 
@@ -14,5 +15,5 @@ func init() {
 }
 
 func main() {
-	database.DB.AutoMigrate()
+	database.DB.AutoMigrate(&models.User{})
 }
