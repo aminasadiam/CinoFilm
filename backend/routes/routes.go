@@ -15,4 +15,5 @@ func SetupApp(app *echo.Echo) {
 
 func authRoutes(app *echo.Echo) {
 	app.POST("/api/register", controllers.Register)
+	app.POST("/api/login", controllers.Login)
 }
