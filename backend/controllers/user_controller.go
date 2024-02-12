@@ -76,3 +76,39 @@ func Login(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, "success")
 }
+
+func User(c echo.Context) error {
+	cookie, err := c.Cookie("jwt")
+	if err != nil {
+		return &echo.HTTPError{Code: http.StatusUnauthorized, Message: "missing or invalid cookie"}
+	}
+
+	token, err := jwt.ParseWithClaims(cookie.String(), &jwt.StandardClaims{}, func(t *jwt.Token) (interface{}, error) {
+		return []byte("secret"), nil
+	})
+
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, "unauthenticated")
+	}
+
+	claims := token.Claims.(*jwt.StandardClaims)
+
+	var user models.User
+
+	database.DB.Where("id = ?", claims.Issuer).First(&user)
+
+	return c.JSON(http.StatusOK, user)
+}
+
+func Logout(c echo.Context) error {
+	cookie := http.Cookie{
+		Name:     "jwt",
+		Value:    "",
+		Expires:  time.Now().Add(-time.Hour),
+		HttpOnly: true,
+	}
+
+	c.SetCookie(&cookie)
+
+	return c.JSON(http.StatusOK, "logout")
+}
