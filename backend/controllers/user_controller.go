@@ -3,10 +3,12 @@ package controllers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/aminasadiam/CinoFilm/backend/database"
 	"github.com/aminasadiam/CinoFilm/backend/models"
 	"github.com/aminasadiam/CinoFilm/backend/security/password"
+	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 	"github.com/nanorand/nanorand"
 )
@@ -53,5 +55,24 @@ func Login(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, "incorrect password")
 	}
 
-	return c.JSON(http.StatusOK, user)
+	cliam := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.StandardClaims{
+		Issuer:    strconv.Itoa(int(user.ID)),
+		ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+	})
+
+	token, err := cliam.SignedString([]byte("secret"))
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, "failed to login : "+err.Error())
+	}
+
+	cookie := http.Cookie{
+		Name:     "jwt",
+		Value:    token,
+		Expires:  time.Now().Add(time.Hour * 24),
+		HttpOnly: true,
+	}
+
+	c.SetCookie(&cookie)
+
+	return c.JSON(http.StatusOK, "success")
 }
