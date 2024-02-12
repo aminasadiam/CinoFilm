@@ -9,6 +9,7 @@ import (
 func SetupApp(app *echo.Echo) {
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recover())
+	app.Use(middleware.CORS())
 
 	authRoutes(app)
 }
